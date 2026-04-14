@@ -8,7 +8,7 @@ using TMPro;
 public class Menu_Manager : MonoBehaviour
 {
 
-    public TMP_Text panelName;
+    public TMP_Text panelName; 
     public void LoadScene(string sceneName)
     {
        SceneManager.LoadScene(sceneName); 
