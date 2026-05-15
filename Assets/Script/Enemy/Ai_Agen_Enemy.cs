@@ -4,7 +4,6 @@ using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(SpriteRenderer))]
-
 public class Ai_Agen_Enemy : MonoBehaviour
 {
     public enum EnemyState { Patrol, Chase, Return }
@@ -28,6 +27,12 @@ public class Ai_Agen_Enemy : MonoBehaviour
     [Header("Obstacle Avoidance")]
     public LayerMask obstacleLayer;      // Tentukan layer mana yang dianggap sebagai bangunan/tembok
     public float avoidDistance = 1.5f;   // Panjang sensor untuk mendeteksi tembok
+
+    // --- TAMBAHAN KODE: PENGATURAN TEMPUR ---
+    [Header("Combat Settings")]
+    public float damage = 20f;           // Jumlah darah yang akan dikurangi
+    public float bounceForce = 5f;       // Kekuatan pantulan saat menabrak player
+    // ----------------------------------------
     
     private Vector2 direction;
     private Rigidbody2D rb;
@@ -59,6 +64,7 @@ public class Ai_Agen_Enemy : MonoBehaviour
 
         float distToPlayer = Vector2.Distance(transform.position, player.position);
         float distToHome = Vector2.Distance(transform.position, homePosition);
+        
         if (currentState != EnemyState.Chase)
         {
             // Cek jarak
@@ -97,6 +103,24 @@ public class Ai_Agen_Enemy : MonoBehaviour
 
         FlipSprite();
     }
+
+    // MENGURANGI DARAH 
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            PlayerHUD playerHUD = collision.gameObject.GetComponent<PlayerHUD>();
+            if (playerHUD != null)
+            {
+                playerHUD.TakeDamage(damage);
+            }
+
+            Vector2 bounceDirection = (transform.position - collision.transform.position).normalized;
+            rb.AddForce(bounceDirection * bounceForce, ForceMode2D.Impulse);
+        }
+    }
+    // -------------------------------------------------------------
+
     Vector2 AvoidObstacles(Vector2 currentDir)
     {
         // Tembakkan sensor ke depan
