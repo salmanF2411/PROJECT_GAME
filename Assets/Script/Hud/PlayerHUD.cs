@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI; // Wajib untuk akses UI
+using UnityEngine.UI; 
 
 public class PlayerHUD : MonoBehaviour
 {
@@ -17,14 +17,18 @@ public class PlayerHUD : MonoBehaviour
     public float currentStamina;
     
     [Header("Pengaturan Regenerasi")]
-    public float staminaRegenRate = 15f; // Kecepatan isi ulang stamina per detik
+    public float staminaRegenRate = 15f; 
+
+    [Header("Pengaturan Makanan (Meal)")]
+    [Tooltip("Berapa banyak darah yang bertambah saat memakan item dengan tag 'meal'")]
+    public float nilaiPenyembuhan = 20f; 
 
     private void Start()
     {
         currentHealth = maxHealth;
         currentStamina = maxStamina;
 
-        //tur batas maksimal slider sesuai dengan maxHealth/maxStamina karakter kita
+        // Atur batas maksimal slider sesuai dengan maxHealth/maxStamina karakter kita
         if (healthSlider != null)
         {
             healthSlider.maxValue = maxHealth;
@@ -47,18 +51,15 @@ public class PlayerHUD : MonoBehaviour
         }
 
         // --- REGENERASI STAMINA OTOMATIS ---
-        // Jika stamina saat ini kurang dari batas maksimal, isi terus pelan-pelan
         if (currentStamina < maxStamina)
         {
             currentStamina += staminaRegenRate * Time.deltaTime;
             
-            // Jangan biarkan stamina melebihi batas maksimal (100)
             if (currentStamina > maxStamina) 
             {
                 currentStamina = maxStamina;
             }
             
-            // Update posisi bar birunya agar bergerak naik
             if (staminaSlider != null)
             {
                 staminaSlider.value = currentStamina;
@@ -66,12 +67,45 @@ public class PlayerHUD : MonoBehaviour
         }
     }
 
+    // ==================================================
+    // DETEKSI PENGAMBILAN ITEM (MEAL)
+    // ==================================================
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.CompareTag("meal"))
+        {
+            if (currentHealth < maxHealth)
+            {
+                Heal(nilaiPenyembuhan);
+
+                // Hancurkan objek makanan yang diambil agar hilang dari map
+                Destroy(collision.gameObject);
+            }
+        }
+    }
+
+    // Fungsi khusus untuk menambah darah (Penyembuhan)
+    public void Heal(float amount)
+    {
+        currentHealth += amount;
+        
+        if (currentHealth > maxHealth) 
+        {
+            currentHealth = maxHealth;
+        }
+        
+        // Perbarui tampilan Slider darah secara instan
+        if (healthSlider != null)
+        {
+            healthSlider.value = currentHealth;
+        }
+    }
+
     public void TakeDamage(float damage)
     {
         currentHealth -= damage;
-        if (currentHealth < 0) currentHealth = 0; // Jangan sampai minus
+        if (currentHealth < 0) currentHealth = 0; 
         
-        // Langsung update posisi bar merahnya
         if (healthSlider != null)
         {
             healthSlider.value = currentHealth;
@@ -81,9 +115,8 @@ public class PlayerHUD : MonoBehaviour
     public void UseStamina(float amount)
     {
         currentStamina -= amount;
-        if (currentStamina < 0) currentStamina = 0; // Jangan sampai minus
+        if (currentStamina < 0) currentStamina = 0; 
         
-        // Update bar birunya saat dipakai
         if (staminaSlider != null)
         {
             staminaSlider.value = currentStamina;
